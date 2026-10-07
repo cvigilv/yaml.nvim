@@ -33,7 +33,11 @@ yaml.parse({content})                                            *yaml.parse()*
 
     Returns: ~
         table|nil  The parsed YAML as a Lua table, or nil on error
-        string|nil Error message if parsing failed
+        string|nil Error message if parsing failed, of the form
+                   "line N: ...". Flow collections other than [] and {},
+                   anchors, aliases, tags, multiple documents, and plain or
+                   quoted strings spanning several lines are not supported
+                   and produce an error.
 
     Example: >
         local yaml = require('yaml')
@@ -68,7 +72,9 @@ yaml.encode({data}, {options})                                  *yaml.encode()*
             (default: 2)
 
     Returns: ~
-        string  The YAML string
+        string  The YAML string, ending with a newline. It reads back as
+                the same data with |yaml.parse()| and with other YAML
+                parsers.
 
     Example: >
         local yaml = require('yaml')

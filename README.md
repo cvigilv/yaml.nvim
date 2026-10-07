@@ -96,7 +96,7 @@ local yaml_string = yaml.encode(data)
 print(yaml_string)
 -- Output:
 -- age: 25
--- name: "Jane Doe"
+-- name: Jane Doe
 -- settings:
 --   notifications: true
 --   theme: dark
@@ -259,13 +259,23 @@ Safely set nested values using dot notation.
 
 - ✅ Key-value pairs
 - ✅ Nested objects
-- ✅ Arrays/Lists
-- ✅ Strings (quoted and unquoted)
-- ✅ Numbers (integers and floats)
+- ✅ Arrays/Lists, including lists of objects and nested lists
+- ✅ Strings (plain, single-quoted, and double-quoted with escapes)
+- ✅ Numbers (integers, floats, `.inf`, `.nan`)
 - ✅ Booleans
 - ✅ Null values
+- ✅ Empty collections (`[]` and `{}`)
 - ✅ Comments (ignored during parsing)
-- ✅ Multi-line strings (with `|` and `>`)
+- ✅ Multi-line strings (literal `|` and folded `>`, with chomping indicators)
+
+`yaml.encode` output reads back as the same data with `yaml.parse` and with
+other YAML parsers. Strings that YAML 1.1 parsers would read as another type
+(for example `yes`, `1_000`, or `2001-12-14`) are quoted.
+
+Not supported: flow collections other than `[]` and `{}`, anchors and aliases,
+tags, multiple documents, and plain or quoted strings that span several lines.
+`yaml.parse` returns `nil` and an error message naming the line when it meets
+these or any other invalid input.
 
 ## Testing
 

@@ -194,6 +194,116 @@ float: 3.14
     end)
   end)
 
+  describe("round trip", function()
+    local function round_trip(data, options)
+      local result, err = yaml.parse(yaml.encode(data, options))
+      assert.is_nil(err)
+      assert.are.same(data, result)
+    end
+
+    it("keeps single-character and keyword-like strings", function()
+      round_trip({ a = "e", n = "y", t = "true", yes = "no", ["1"] = "2", tilde = "~", empty = "" })
+      assert.are.equal("a: e\n", yaml.encode({ a = "e" }))
+    end)
+
+    it("keeps strings with YAML syntax characters", function()
+      round_trip({
+        ["key: with colon"] = "value: with colon",
+        hash = "a # not a comment",
+        dash = "- not a list",
+        quotes = 'it\'s "quoted"',
+        brackets = "[not] {flow}",
+        control = "tab\there\1",
+        spaces = "  padded  ",
+      })
+    end)
+
+    it("keeps lists of tables", function()
+      local data = {
+        items = {
+          { name = "a", tags = { "x", "y" } },
+          { name = "b", nested = { deep = { 1, 2 } } },
+        },
+      }
+      round_trip(data)
+      round_trip(data, { indent_width = 4 })
+      assert.are.equal(
+        "items:\n  - name: a\n  - name: b\n",
+        yaml.encode({ items = { { name = "a" }, { name = "b" } } })
+      )
+    end)
+
+    it("keeps nested lists", function()
+      round_trip({ 1, { 2, { 3, 4 } }, { { a = 1 } } })
+      round_trip({ matrix = { { 1, 2 }, { 3, 4 } } }, { indent_width = 3 })
+    end)
+
+    it("keeps multi-line strings", function()
+      local data = {
+        no_newline = "line one\nline two",
+        trailing = "line one\nline two\n",
+        many_trailing = "a\nb\n\n\n",
+        blank_lines = "a\n\n\nb",
+        special = "key: value\n# not a comment\n- not a list",
+        leading_space = "  indented\nsecond",
+        list = { "x\ny", { k = "p\nq\n" } },
+      }
+      round_trip(data)
+      round_trip(data, { indent_width = 1 })
+      round_trip(data, { indent_width = 4 })
+    end)
+
+    it("keeps numbers and empty collections", function()
+      round_trip({ big = 2 ^ 60, third = 1 / 3, tiny = 1e-300, inf = math.huge, ninf = -math.huge, neg = -7 })
+      local result = yaml.parse(yaml.encode({ list = setmetatable({}, { __is_array = true }), map = {} }))
+      assert.are.same({}, result.list)
+      assert.is_true(getmetatable(result.list).__is_array)
+      assert.are.same({}, result.map)
+    end)
+  end)
+
+  describe("parse details", function()
+    it("unescapes double-quoted strings", function()
+      local result = yaml.parse([[s: "a\"b\\c\n\t\x41é"]])
+      assert.are.equal('a"b\\c\n\tAé', result.s)
+    end)
+
+    it("handles single-quoted strings and comments", function()
+      local result = yaml.parse("a: 'it''s' # comment\nb: plain # comment\nc: 'x # y'\n")
+      assert.are.same({ a = "it's", b = "plain", c = "x # y" }, result)
+    end)
+
+    it("folds > block scalars", function()
+      local result = yaml.parse("f: >\n  one\n  two\n\n  three\nk: |-\n  kept\n")
+      assert.are.same({ f = "one two\nthree\n", k = "kept" }, result)
+    end)
+
+    it("accepts a sequence at the same indentation as its key", function()
+      assert.are.same({ list = { "a", "b" }, next = 1 }, yaml.parse("list:\n- a\n- b\nnext: 1\n"))
+    end)
+
+    it("does not split plain scalars on colons without a following space", function()
+      assert.are.same({ "http://example.com" }, yaml.parse("- http://example.com\n"))
+    end)
+
+    it("reports unsupported and invalid input with a line number", function()
+      local cases = {
+        ["a: 1\nb: [1, 2]\n"] = "line 2: flow collections are not supported",
+        ["a: &x 1\n"] = "line 1: anchors, aliases, and tags are not supported",
+        ["a: 1\na: 2\n"] = 'line 2: duplicate key "a"',
+        ["a: 1\n  b: 2\n"] = "line 2: unexpected indentation (multi-line plain scalars are not supported)",
+        ["a: 1\n---\nb: 2\n"] = "line 2: multiple documents and document markers other than a leading '---' are not supported",
+        ['a: "\\q"'] = "line 1: invalid escape \\q",
+        ["just text"] = "line 1: expected a mapping or sequence",
+      }
+      for input, message in pairs(cases) do
+        local result, err = yaml.parse(input)
+        assert.is_nil(result)
+        assert.are.equal(message, err)
+      end
+    end)
+  end)
+
   describe("file operations", function()
     local test_file = "/tmp/test_yaml_" .. os.time() .. ".yaml"
 
