@@ -4,11 +4,9 @@
 CONTENTS                                                        *yaml-contents*
 
     1. Introduction ............................ |yaml-introduction|
-    2. Setup ................................... |yaml-setup|
-    3. Functions ............................... |yaml-functions|
-    4. Commands ................................ |yaml-commands|
-    5. Examples ................................ |yaml-examples|
-    6. License ................................. |yaml-license|
+    2. Functions ............................... |yaml-functions|
+    3. Examples ................................ |yaml-examples|
+    4. License ................................. |yaml-license|
 
 ==============================================================================
 1. INTRODUCTION                                             *yaml-introduction*
@@ -25,23 +23,7 @@ Features:
   - Helper functions for nested value access
 
 ==============================================================================
-2. SETUP                                                           *yaml-setup*
-
-yaml.setup({config})                                             *yaml.setup()*
-    Configure the yaml.nvim plugin.
-
-    Parameters: ~
-        {config}  (table, optional) Configuration options
-            indent_width (number): Indentation width (default: 2)
-
-    Example: >
-        require('yaml').setup({
-          indent_width = 2
-        })
-<
-
-==============================================================================
-3. FUNCTIONS                                                   *yaml-functions*
+2. FUNCTIONS                                                   *yaml-functions*
 
 yaml.parse({content})                                            *yaml.parse()*
     Parse a YAML string into a Lua table.
@@ -82,6 +64,8 @@ yaml.encode({data}, {options})                                  *yaml.encode()*
     Parameters: ~
         {data}     (table) The Lua table to encode
         {options}  (table, optional) Encoding options
+            indent_width (integer): Spaces per indentation level
+            (default: 2)
 
     Returns: ~
         string  The YAML string
@@ -90,6 +74,7 @@ yaml.encode({data}, {options})                                  *yaml.encode()*
         local yaml = require('yaml')
         local data = { name = "Jane", age = 25 }
         local yaml_str = yaml.encode(data)
+        local wide = yaml.encode(data, { indent_width = 4 })
 <
 
 yaml.write({filepath}, {data}, {options})                        *yaml.write()*
@@ -98,7 +83,7 @@ yaml.write({filepath}, {data}, {options})                        *yaml.write()*
     Parameters: ~
         {filepath}  (string) Path to the output file
         {data}      (table) The Lua table to encode
-        {options}   (table, optional) Encoding options
+        {options}   (table, optional) Encoding options; see |yaml.encode()|
 
     Returns: ~
         boolean    Success status
@@ -109,12 +94,14 @@ yaml.write({filepath}, {data}, {options})                        *yaml.write()*
         local success, err = yaml.write('output.yaml', { version = 1 })
 <
 
-yaml.modify({filepath}, {modifier})                             *yaml.modify()*
+yaml.modify({filepath}, {modifier}, {options})                  *yaml.modify()*
     Load, modify, and save a YAML file.
 
     Parameters: ~
         {filepath}  (string) Path to the YAML file
         {modifier}  (function) Function that takes and returns a table
+        {options}   (table, optional) Encoding options used when saving;
+                    see |yaml.encode()|
 
     Returns: ~
         boolean    Success status
@@ -162,24 +149,7 @@ yaml.set({data}, {path}, {value})                                  *yaml.set()*
 <
 
 ==============================================================================
-4. COMMANDS                                                     *yaml-commands*
-
-:YamlParse {yaml_string}                                          *:YamlParse*
-    Parse a YAML string and print the result.
-
-    Example: >
-        :YamlParse name: John
-<
-
-:YamlEncode {lua_table}                                          *:YamlEncode*
-    Encode a Lua table to YAML and print the result.
-
-    Example: >
-        :YamlEncode {name = "John", age = 30}
-<
-
-==============================================================================
-5. EXAMPLES                                                     *yaml-examples*
+3. EXAMPLES                                                     *yaml-examples*
 
 Parse a YAML configuration file: >
     local yaml = require('yaml')
@@ -209,7 +179,7 @@ Update a configuration value: >
 <
 
 ==============================================================================
-6. LICENSE                                                       *yaml-license*
+4. LICENSE                                                       *yaml-license*
 
 MIT License
 

@@ -24,14 +24,7 @@ use 'jedi-knights/yaml.nvim'
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
-{
-  'jedi-knights/yaml.nvim',
-  config = function()
-    require('yaml').setup({
-      indent_width = 2, -- default indentation width
-    })
-  end
-}
+{ 'jedi-knights/yaml.nvim' }
 ```
 
 Using [vim-plug](https://github.com/junegunn/vim-plug):
@@ -40,15 +33,10 @@ Using [vim-plug](https://github.com/junegunn/vim-plug):
 Plug 'jedi-knights/yaml.nvim'
 ```
 
+The plugin is the single file `lua/yaml.lua`, which has no dependencies. You can
+also copy it into your own configuration or plugin and load it with `require`.
+
 ## Usage
-
-### Basic Setup
-
-```lua
-require('yaml').setup({
-  indent_width = 2, -- optional, defaults to 2
-})
-```
 
 ### Parsing YAML
 
@@ -184,14 +172,6 @@ yaml.set(data, "database.port", 5432)
 
 ## API Reference
 
-### `yaml.setup(config)`
-
-Configure the plugin.
-
-**Parameters:**
-- `config` (table, optional): Configuration options
-  - `indent_width` (number): Number of spaces for indentation (default: 2)
-
 ### `yaml.parse(content)`
 
 Parse a YAML string into a Lua table.
@@ -221,6 +201,7 @@ Encode a Lua table to a YAML string.
 **Parameters:**
 - `data` (table): The Lua table to encode
 - `options` (table, optional): Encoding options
+  - `indent_width` (integer): Number of spaces per indentation level (default: 2)
 
 **Returns:**
 - `string`: The YAML string
@@ -232,19 +213,20 @@ Write a Lua table to a YAML file.
 **Parameters:**
 - `filepath` (string): Path to the output file
 - `data` (table): The Lua table to encode
-- `options` (table, optional): Encoding options
+- `options` (table, optional): Encoding options, as for `yaml.encode`
 
 **Returns:**
 - `boolean`: Success status
 - `string|nil`: Error message if writing failed
 
-### `yaml.modify(filepath, modifier)`
+### `yaml.modify(filepath, modifier, options)`
 
 Load, modify, and save a YAML file.
 
 **Parameters:**
 - `filepath` (string): Path to the YAML file
 - `modifier` (function): Function that takes and returns a table
+- `options` (table, optional): Encoding options used when saving, as for `yaml.encode`
 
 **Returns:**
 - `boolean`: Success status
@@ -272,13 +254,6 @@ Safely set nested values using dot notation.
 
 **Returns:**
 - `table`: The modified table
-
-## Commands
-
-The plugin provides two user commands:
-
-- `:YamlParse <yaml_string>`: Parse a YAML string and print the result
-- `:YamlEncode <lua_table>`: Encode a Lua table to YAML and print the result
 
 ## Supported YAML Features
 

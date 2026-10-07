@@ -1,15 +1,47 @@
 local yaml = require("yaml")
 
 describe("yaml.nvim", function()
-  describe("setup", function()
-    it("works with default config", function()
-      yaml.setup()
-      assert.are.equal(2, yaml.config.indent_width)
+  describe("indent_width", function()
+    local data = { database = { host = "localhost", options = { pool = 5 } } }
+
+    it("defaults to 2", function()
+      assert.are.equal(yaml.encode(data), yaml.encode(data, { indent_width = 2 }))
+      assert.is_true(yaml.encode(data):match("\n  host: localhost") ~= nil)
     end)
 
-    it("works with custom config", function()
-      yaml.setup({ indent_width = 4 })
-      assert.are.equal(4, yaml.config.indent_width)
+    it("controls nesting depth", function()
+      local result = yaml.encode(data, { indent_width = 4 })
+      assert.is_true(result:match("\n    host: localhost") ~= nil)
+      assert.is_true(result:match("\n        pool: 5") ~= nil)
+      assert.are.same(data, yaml.parse(result))
+    end)
+
+    it("is used by write and modify", function()
+      local test_file = "/tmp/test_yaml_indent_" .. os.time() .. ".yaml"
+      local function read_raw()
+        local f = assert(io.open(test_file, "r"))
+        local content = f:read("*a")
+        f:close()
+        return content
+      end
+
+      assert.is_true(yaml.write(test_file, data, { indent_width = 3 }))
+      assert.is_true(read_raw():match("\n   host: localhost") ~= nil)
+
+      assert.is_true(yaml.modify(test_file, function(d)
+        return d
+      end, { indent_width = 5 }))
+      assert.is_true(read_raw():match("\n     host: localhost") ~= nil)
+      os.remove(test_file)
+    end)
+
+    it("rejects invalid values", function()
+      assert.has_error(function()
+        yaml.encode(data, { indent_width = 0 })
+      end, "indent_width must be a positive integer, got 0 (number)")
+      assert.has_error(function()
+        yaml.encode(data, { indent_width = "2" })
+      end, "indent_width must be a positive integer, got 2 (string)")
     end)
   end)
 
