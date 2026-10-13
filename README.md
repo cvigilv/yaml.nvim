@@ -196,6 +196,18 @@ Crosby. It is now developed separately and does not follow changes in that
 repository. Since the fork, the parser and encoder have been rewritten and
 merged into a single file.
 
+## LLM disclosure
+
+jedi-knights wrote the original plugin with GitHub Copilot's coding agent. I
+later merged that work with my own prototype YAML parser and encoder, which
+produced the current `lua/yaml.lua`.
+
+I did that work with the help of an AI coding agent. I directed it, reviewed
+it, and am responsible for the result. The agent assisted me, not the other
+way around. For that reason my commits credit the agent with an
+`Assisted-by:` trailer instead of `Co-authored-by:`. No LLM provider is an
+author of these commits or accountable for them.
+
 ## License
 
 MIT. The license text is at the top of [`lua/yaml.lua`](lua/yaml.lua), so it
